@@ -113,7 +113,7 @@ class Target():
 
         expiry = human_time_to_seconds(self.config.get('expiry', '0'))
         if expiry < 0 or expiry is None:
-            return False  # Cache indetinifely
+            return False  # Cache indefinitely
 
         return self.cache()['last_run'] + expiry < time.time()
 
