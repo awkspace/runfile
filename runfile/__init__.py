@@ -300,7 +300,7 @@ class Runfile():
     def print_summary(self):
         if not self.results:
             return  # Nothing happened
-        if self.results[-1].status == TargetResult.SUCCESS:
+        if self.results[-1].status != TargetResult.FAILURE:
             status = f'{Fore.GREEN}SUCCESS{Fore.RESET}'
         else:
             status = f'{Fore.RED}FAILURE{Fore.RESET}'
