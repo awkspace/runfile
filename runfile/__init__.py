@@ -203,18 +203,25 @@ class Runfile():
         if all_targets is None:
             all_targets = []
         for _, target in self.targets.items():
+            include_path = target.runfile.header.include_path
             if target.name is None:
-                continue
+                if include_path:
+                    target.unique_name = '/'.join(
+                        [i['name'] for i in include_path])
+                    continue
+                else:
+                    target.unique_name = self.path
+                    continue
             name = target.name
-            for include in reversed(target.runfile.header.include_path):
+            for include in reversed(include_path):
                 if name in all_targets:
                     name = f'{include["name"]}/{name}'
                 else:
                     break
             target.unique_name = name
             all_targets.append(target.unique_name)
-            for child in self.children:
-                self.children[child].name_targets(all_targets)
+        for child in self.children:
+            self.children[child].name_targets(all_targets)
 
     def find_target(self, target_expr):
         targets = []
@@ -252,7 +259,7 @@ class Runfile():
         try:
             for target in ts.static_order():
                 result = target.execute()
-                if target.name:
+                if result:
                     result.print_status()
                     print()
                 self.results.append(result)
