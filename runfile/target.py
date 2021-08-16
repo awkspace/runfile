@@ -73,9 +73,6 @@ class Target():
             self.result.status = TargetResult.CACHED
             return self.result
 
-        if not self.blocks:
-            return self.result
-
         self.result.target_start = time.time()
         icon = '⏳'
         if self.container:
