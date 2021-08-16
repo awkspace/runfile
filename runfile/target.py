@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
+import docker
 import hashlib
+import os
 import re
 import time
 from runfile.util import duration, human_time_to_seconds
 from runfile.exceptions import CodeBlockExecutionError, TargetExecutionError, \
     RunfileFormatError
 from runfile.cache import RunfileCache
+from io import BytesIO
 
 
 class Target():
@@ -18,8 +21,10 @@ class Target():
         self.unique_name = None
         self.desc = desc
         self.blocks = []
-        self.config = {}
         self.runfile = None
+        self.config = {}
+        self.dockerfile = None
+        self.container = None
 
         self.validate()
 
@@ -55,6 +60,13 @@ class Target():
 
     def execute(self, silent=False):
         result = TargetResult(self.unique_name)
+
+        if self.runfile.use_containers:
+            if self.dockerfile:
+                self.build_container()
+            else:
+                self.container = self.runfile.container()
+
         if not self.is_expired():
             result.status = TargetResult.CACHED
             return result
@@ -64,13 +76,15 @@ class Target():
             print(f'⏳ Executing target {self.name}...')
         try:
             for block in self.blocks:
-                block.execute()
+                block.execute(self.container)
             result.status = TargetResult.SUCCESS
         except CodeBlockExecutionError as e:
             result.exception = e
             result.status = TargetResult.FAILURE
 
         result.target_finish = time.time()
+        if self.name and self.container != self.runfile.container():
+            self.stop_container()
         if result.status == TargetResult.SUCCESS:
             self.cache()['last_run'] = result.target_finish
             self.cache()['body'] = self.body_hash()
@@ -122,6 +136,48 @@ class Target():
         for block in self.blocks:
             h.update(block.body.encode('utf-8'))
         return h.hexdigest()
+
+    def build_container(self):
+        client = docker.from_env()
+        df_hash = hashlib.sha1(self.dockerfile.encode('utf-8')).hexdigest()
+        if self.cache()['image'] and self.cache()['build_file'] == df_hash:
+            try:
+                image = client.images.get(self.cache()['image'])
+                return self.start_container(image)
+            except docker.errors.ImageNotFound:
+                pass
+        build_file = BytesIO(self.dockerfile.encode('utf-8'))
+        image = client.images.build(
+            fileobj=build_file,
+            rm=True
+        )[0]
+        self.cache()['image'] = image.id
+        self.cache()['build_file'] = df_hash
+        self.start_container(image)
+
+    def start_container(self, image):
+        client = docker.from_env()
+        self.container = client.containers.run(
+            image,
+            command='/bin/cat',
+            tty=True,
+            detach=True,
+            working_dir='/work',
+            volumes={
+                os.getcwd(): {
+                    'bind': '/work',
+                    'mode': 'rw'
+                },
+                '/tmp': {
+                    'bind': '/mnt/tmp',
+                    'mode': 'rw'
+                }
+            }
+        )
+
+    def stop_container(self):
+        self.container.exec_run(f'chown -R {os.getuid()}:{os.getgid()} /work')
+        self.container.kill()
 
 
 class TargetResult():

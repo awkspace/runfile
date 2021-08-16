@@ -16,6 +16,9 @@ def main():
     parser.add_argument('target')
     parser.add_argument('-f', '--file', dest='filename', default='Runfile.md')
     parser.add_argument('-u', '--update', dest='update', action='store_true')
+    parser.add_argument(
+        '--containers', dest='containers', action='store_true',
+        help='Allow steps to run in containers where applicable.')
     args = parser.parse_args()
 
     rf = Runfile(args.filename)
@@ -27,6 +30,9 @@ def main():
     except RunfileFormatError as e:
         print(f'RunfileFormatError: {str(e)}')
         sys.exit(1)
+
+    if args.containers:
+        rf.use_containers = True
 
     try:
         rf.execute_target(args.target)

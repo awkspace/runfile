@@ -1,3 +1,4 @@
-pyyaml
-humanize
 colorama
+docker
+humanize
+pyyaml

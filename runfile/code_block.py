@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
+import docker
 import os
+import sys
 from tempfile import TemporaryDirectory
 from runfile.exceptions import CodeBlockExecutionError
 
@@ -53,17 +55,36 @@ class CodeBlock():
             return False
         return True
 
-    def execute(self):
+    def execute(self, container=None):
         with TemporaryDirectory() as directory:
             filename = language_info.get(self.language, {}).get('file', 'run')
             filepath = os.path.join(directory, filename)
             with open(filepath, 'w') as f:
                 f.write(self.body)
                 f.flush()
-                cmd = language_info.get(self.language, {}).get(
-                    'cmd',
-                    '/usr/bin/env {exe} "{file}"'
+            cmd = language_info.get(self.language, {}).get(
+                'cmd',
+                '/usr/bin/env {exe} "{file}"'
+            )
+
+            if container:
+                client = docker.from_env()
+                resp = client.api.exec_create(
+                    container.id,
+                    cmd.format(
+                        dir=os.path.join('/mnt', directory[1:]),
+                        file=os.path.join('/mnt', filepath[1:]),
+                        exe=self.language
+                    )
                 )
+                exec_result = client.api.exec_start(
+                    resp['Id'], stream=True)
+                for output in exec_result:
+                    sys.stdout.buffer.write(output)
+                    sys.stdout.buffer.flush()
+                inspect = client.api.exec_inspect(resp['Id'])
+                exit_code = inspect['ExitCode']
+            else:
                 exit_code = os.system(
                     cmd.format(
                         dir=directory,
@@ -71,5 +92,5 @@ class CodeBlock():
                         exe=self.language
                     )
                 )
-                if exit_code:
-                    raise CodeBlockExecutionError(exit_code)
+            if exit_code:
+                raise CodeBlockExecutionError(exit_code)

@@ -28,6 +28,7 @@ class Runfile():
         self.children = OrderedDict()
         self.start_time = None
         self.results = []
+        self.use_containers = False
 
     def __str__(self):
         tokens = [str(t) for t in self.tokens]
@@ -264,6 +265,7 @@ class Runfile():
             raise RunfileFormatError(
                 f'Target loop detected: {" -> ".join(targets)}')
 
+        self.stop_containers()
         if self.results:
             return self.results
         else:
@@ -308,6 +310,15 @@ class Runfile():
         print('---')
         for result in self.results:
             result.print_status()
+
+    def container(self):
+        return self.targets[None].container
+
+    def stop_containers(self):
+        if self.container():
+            self.targets[None].stop_container()
+        for child in self.children.values():
+            child.stop_containers()
 
 
 class RunfileHeader():
