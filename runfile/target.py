@@ -134,11 +134,11 @@ class Target():
                 if subtarget.cache()['last_run'] > self.cache()['last_run']:
                     return True
 
-        expiry = human_time_to_seconds(self.config.get('expiry', '0'))
-        if expiry is None or expiry < 0:
+        expires = human_time_to_seconds(self.config.get('expires', '0'))
+        if expires is None or expires < 0:
             return False  # Cache indefinitely
 
-        return self.cache()['last_run'] + expiry < time.time()
+        return self.cache()['last_run'] + expires < time.time()
 
     def body_hash(self):
         h = hashlib.sha1()

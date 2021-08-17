@@ -34,21 +34,21 @@ flake8 --exclude lib
 ## install
 
 ```yaml
-expiry: null
+expires: null
 ```
 
 ```sh
-pip install . --target lib
+pip install . -U --target lib
 ```
 
 ## devinstall
 
 ```yaml
-expiry: null
+expires: null
 ```
 
 ```sh
-pip install -e .[dev] --target lib
+pip install -e .[dev] -U --target lib
 ```
 
 ## clean
