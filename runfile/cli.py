@@ -46,7 +46,10 @@ def main():
             rf.update()
         rf.save()
     except RunfileFormatError as e:
-        print(f'RunfileFormatError: {str(e)}')
+        print(f'RunfileFormatError: {str(e)}', file=sys.stderr)
+        sys.exit(1)
+    except RunfileNotFoundError as e:
+        print(f'Runfile not found: {e.path}', file=sys.stderr)
         sys.exit(1)
 
     if args.list_targets:
@@ -73,7 +76,7 @@ def main():
     try:
         rf.execute_target(args.target)
     except TargetNotFoundError as e:
-        print(f"Target not found: {e.target}")
+        print(f"Target not found: {e.target}", file=sys.stderr)
         sys.exit(1)
     except TargetExecutionError as e:
         sys.exit(e.exit_code)
