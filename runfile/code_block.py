@@ -4,6 +4,7 @@ import docker
 import os
 import sys
 from tempfile import TemporaryDirectory
+from runfile.cache import RunfileCache
 from runfile.exceptions import CodeBlockExecutionError
 
 language_info = {
@@ -56,6 +57,9 @@ class CodeBlock():
         return True
 
     def execute(self, container=None):
+        cache = RunfileCache()
+        for key, value in cache['vars'].items():
+            os.environ[key] = value
         with TemporaryDirectory() as directory:
             filename = language_info.get(self.language, {}).get('file', 'run')
             filepath = os.path.join(directory, filename)
