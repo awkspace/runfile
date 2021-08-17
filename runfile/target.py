@@ -109,7 +109,8 @@ class Target():
 
     def clear_cache(self):
         cache = RunfileCache()
-        del cache['targets'][self.cache_key()]
+        if self.cache_key() in cache['targets']:
+            del cache['targets'][self.cache_key()]
 
     def cache_key(self):
         h = hashlib.sha1()
