@@ -161,7 +161,7 @@ class Target():
             fileobj=build_file,
             rm=True
         )[0]
-        print(f'📦 Container built.')
+        print('📦 Container built.')
         print()
         self.cache()['image'] = image.id
         self.cache()['build_file'] = df_hash
