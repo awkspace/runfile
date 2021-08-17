@@ -1,5 +1,10 @@
 # Runfile
 
+Installs dependencies to a local `lib` directory to avoid conflicting with a
+global install of`run`.
+
+Invoke `lib/run` for the development version.
+
 ```python
 import os
 lib_path = './lib'
