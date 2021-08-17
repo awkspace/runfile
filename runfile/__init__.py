@@ -278,6 +278,13 @@ class Runfile():
         else:
             raise TargetNotFoundError(target=target_expr)
 
+    def list_targets(self):
+        for target in self.targets.values():
+            yield target
+        for child in self.children.values():
+            for target in child.list_targets():
+                yield target
+
     def graph_dependencies(self, target, graph=None):
         if not graph:
             graph = {}
