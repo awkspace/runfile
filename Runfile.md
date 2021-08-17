@@ -38,7 +38,7 @@ expires: null
 ```
 
 ```sh
-pip install . -U --target lib
+pip install .
 ```
 
 ## devinstall
