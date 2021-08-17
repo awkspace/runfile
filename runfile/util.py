@@ -29,16 +29,19 @@ def duration(time1, time2=None):
 
 
 def human_time_to_seconds(s):
+    if s is None:
+        return None
     seconds = 0
     patterns = {
-        r'([0-9]+)m': 60,
-        r'([0-9]+)h': 60 * 60,
-        r'([0-9]+)d': 60 * 60 * 24,
-        r'([0-9]+)w': 60 * 60 * 24 * 7,
-        r'([0-9]+)s': 1
+        r'(-?[0-9]+)m': 60,
+        r'(-?[0-9]+)h': 60 * 60,
+        r'(-?[0-9]+)d': 60 * 60 * 24,
+        r'(-?[0-9]+)w': 60 * 60 * 24 * 7,
+        r'(-?[0-9]+)s?': 1
     }
     for pattern, factor in patterns.items():
         match = re.search(pattern, s)
         if match:
+            s = re.sub(pattern, '', s)
             seconds += int(match.group(1)) * factor
     return seconds
