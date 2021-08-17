@@ -8,6 +8,9 @@ with open('README.md') as readme_file:
 with open('requirements.txt') as requirements_file:
     requirements = requirements_file.readlines()
 
+with open('dev_requirements.txt') as dev_requirements_file:
+    dev_requirements = dev_requirements_file.readlines()
+
 setup(
     name='runfile',
     author='awk',
@@ -19,6 +22,9 @@ setup(
     license='MIT',
     url='https://github.com/awkspace/runfile',
     install_requires=requirements,
+    extras_require={
+        'dev': dev_requirements
+    },
     packages=find_packages(),
     entry_points={
         'console_scripts': [
