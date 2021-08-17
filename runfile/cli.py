@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 from argparse import ArgumentParser
 from runfile import Runfile
@@ -26,7 +27,17 @@ def main():
     parser.add_argument(
         '-l', '--list-targets', dest='list_targets', action='store_true',
         help='List targets and exit')
+    parser.add_argument(
+        '--bash-completion', dest='bash_completion', action='store_true',
+        help='Print bash completion script')
     args = parser.parse_args()
+
+    if args.bash_completion:
+        completion_file = os.path.join(
+            os.path.dirname(__file__), 'resources', 'completion.bash')
+        with open(completion_file, 'r') as f:
+            print(f.read())
+        return
 
     rf = Runfile(args.filename)
     try:
