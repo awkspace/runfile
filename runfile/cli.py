@@ -5,11 +5,7 @@ import sys
 from argparse import ArgumentParser
 from runfile import Runfile
 from runfile.exceptions import TargetNotFoundError, TargetExecutionError, \
-    RunfileFormatError, RunfileNotFoundError
-
-# TODO: Tab completion of targets, flags
-# TODO: --list to list targets
-# TODO: --describe to list targets & descriptions
+    RunfileFormatError
 
 
 def main():
