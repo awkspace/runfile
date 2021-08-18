@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 from runfile import Runfile
 from runfile.exceptions import TargetNotFoundError, TargetExecutionError, \
     RunfileFormatError
+from runfile.util import msg, MsgType
 
 
 def main():
@@ -60,15 +61,16 @@ def main():
         return
 
     if not args.target:
-        has_targets = False
+        msg(rf.header.name, MsgType.FILE)
+        if next(rf.list_targets(), None) is None:
+            return
+        print()
+        msg('Targets', MsgType.TARGET)
         for target in rf.list_targets():
-            has_targets = True
             if target.name and target.desc:
                 print(f'{target.unique_name}: {target.desc}')
             elif target.name:
                 print(target.unique_name)
-        if not has_targets:
-            print('No targets found.', file=sys.stderr)
         return
 
     if args.containers:

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import logging
 import os
 import re
 import requests
@@ -15,9 +14,6 @@ from runfile.exceptions import TargetNotFoundError, \
     RunfileFormatError, RunfileNotFoundError
 from runfile.target import Target, TargetResult
 from runfile.util import duration
-
-logging.basicConfig()
-logger = logging.getLogger('runfile')
 
 
 class Runfile():

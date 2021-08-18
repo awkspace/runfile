@@ -1,9 +1,31 @@
 #!/usr/bin/env python3
 
 import humanize
+import os
 import re
 import time
+from colorama import Fore, Style
 from datetime import timedelta
+
+
+def msg(message, kind=None, suffix=None):
+    out = ''
+    style_applied = False
+
+    if not os.environ.get('RUNFILE_NO_EMOJI') and kind["icon"]:
+        out += f'{kind["icon"]} '
+    elif not os.environ.get('RUNFILE_NO_COLOR') and kind["style"]:
+        out += f'{kind["style"]}'
+        style_applied = True
+
+    out += message
+    if style_applied:
+        out += f'{Style.RESET_ALL}'
+
+    if suffix:
+        out += f' {suffix}'
+
+    print(out)
 
 
 def humanize_abbreviated(s):
@@ -45,3 +67,38 @@ def human_time_to_seconds(s):
             s = re.sub(pattern, '', s)
             seconds += int(match.group(1)) * factor
     return seconds
+
+
+class MsgType():
+    FILE = {
+        'icon': '📜',
+        'style': None
+    }
+    TARGET = {
+        'icon': '🎯',
+        'style': '\033[4m'
+    }
+    WORKING = {
+        'icon': '⏳',
+        'style': Fore.BLUE
+    }
+    CONTAINER = {
+        'icon': '📦',
+        'style': Fore.BLUE
+    }
+    SUCCESS = {
+        'icon': '✔️',
+        'style': Fore.GREEN
+    }
+    FAILURE = {
+        'icon': '❌',
+        'style': Fore.RED
+    }
+    NEUTRAL = {
+        'icon': None,
+        'style': Style.DIM
+    }
+    CACHE = {
+        'icon': '💾',
+        'style': Style.DIM
+    }

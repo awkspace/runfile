@@ -5,7 +5,7 @@ import hashlib
 import os
 import re
 import time
-from runfile.util import duration, human_time_to_seconds
+from runfile.util import duration, human_time_to_seconds, msg, MsgType
 from runfile.exceptions import CodeBlockExecutionError, TargetExecutionError, \
     RunfileFormatError, ContainerBuildError
 from runfile.cache import RunfileCache
@@ -83,8 +83,8 @@ class Target():
             self.result.set_status(TargetResult.CACHED)
             return self.result
 
-        icon = '📦' if self.container else '⏳'
-        print(f'{icon} Running {self.unique_name}...')
+        style = MsgType.CONTAINER if self.container else MsgType.WORKING
+        msg(f'Running {self.unique_name}...', style)
 
         try:
             for block in self.blocks:
@@ -159,7 +159,9 @@ class Target():
             except docker.errors.ImageNotFound:
                 pass
         build_file = BytesIO(self.dockerfile.encode('utf-8'))
-        print(f'⏳ Building container for {self.unique_name}...')
+        print(
+            f'Building container for {self.unique_name}...',
+            MsgType.WORKING)
 
         build_error = None
         try:
@@ -170,18 +172,22 @@ class Target():
         except docker.errors.BuildError as e:
             build_error = e
             print(str(build_error))
-            print(f'❌ Failed building container for {self.unique_name}.')
+            print(
+                f'Failed building container for {self.unique_name}.',
+                MsgType.FAILURE)
             print()
 
         if build_error:
             raise ContainerBuildError(255)
 
-        print('📦 Container built.')
+        msg('Container built.', MsgType.CONTAINER)
         print()
         self.cache()['image'] = image.id
         self.cache()['build_file'] = df_hash
         self.start_container(image)
 
+    # TODO: Get other volumes from target config, if applicable
+    # TODO: Inspect image for workdir and default to /work
     def start_container(self, image):
         client = docker.from_env()
         self.container = client.containers.run(
@@ -226,11 +232,15 @@ class TargetResult():
 
     def print_status(self):
         if self.status == TargetResult.SUCCESS:
-            print(f'✅ Completed {self.name}. ({self.time()})')
+            msg(f'Completed {self.name}.',
+                MsgType.SUCCESS,
+                suffix=f'({self.time()})')
         elif self.status == TargetResult.FAILURE:
-            print(f'❌ Failed {self.name}. ({self.time()})')
+            msg(f'Failed {self.name}.',
+                MsgType.FAILURE,
+                suffix=f'({self.time()})')
         elif self.status == TargetResult.CACHED:
-            print(f'💾 Used cache for {self.name}.')
+            msg(f'Used cache for {self.name}.', MsgType.CACHE)
 
     def time(self):
         return duration(self.target_start, self.target_finish)
