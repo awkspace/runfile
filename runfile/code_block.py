@@ -8,6 +8,15 @@ from runfile.cache import RunfileCache
 from runfile.exceptions import CodeBlockExecutionError
 
 language_info = {
+    'sh': {
+        'cmd': '/usr/bin/env sh -e "{file}"'
+    },
+    'bash': {
+        'cmd': '/usr/bin/env bash -e "{file}"'
+    },
+    'zsh': {
+        'cmd': '/usr/bin/env zsh -e "{file}"'
+    },
     'js': {
         'cmd': '/usr/bin/env node "{file}"'
     },
