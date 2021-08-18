@@ -13,7 +13,7 @@ from runfile.code_block import CodeBlock
 from runfile.exceptions import TargetNotFoundError, \
     RunfileFormatError, RunfileNotFoundError
 from runfile.target import Target, TargetResult
-from runfile.util import duration
+from runfile.util import duration, msg, MsgType
 
 
 class Runfile():
@@ -241,6 +241,9 @@ class Runfile():
         return targets
 
     def execute_target(self, target_expr):
+        msg(target_expr, MsgType.TARGET)
+        print()
+
         if not self.start_time:
             self.start_time = time.time()
 

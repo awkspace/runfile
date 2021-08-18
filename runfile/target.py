@@ -77,6 +77,9 @@ class Target():
                 self.container = self.runfile.container()
 
         if not self.blocks:
+            if self.config:
+                # Technically, we executed the config, so mark success
+                self.result.set_status(TargetResult.SUCCESS)
             return self.result
 
         if not self.is_expired():
