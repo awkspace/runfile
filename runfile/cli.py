@@ -62,6 +62,8 @@ def main():
 
     if not args.target:
         msg(rf.header.name, MsgType.FILE)
+        if rf.header.desc:
+            print(rf.header.desc)
         if next(rf.list_targets(), None) is None:
             return
         print()
