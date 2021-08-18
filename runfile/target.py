@@ -77,7 +77,7 @@ class Target():
                 self.container = self.runfile.container()
 
         if not self.blocks:
-            if self.config:
+            if self.config and self.name:
                 # Technically, we executed the config, so mark success
                 self.result.set_status(TargetResult.SUCCESS)
             return self.result
