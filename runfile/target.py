@@ -83,9 +83,7 @@ class Target():
             self.result.set_status(TargetResult.CACHED)
             return self.result
 
-        icon = '⏳'
-        if self.container:
-            icon = '📦'
+        icon = '📦' if self.container else '⏳'
         print(f'{icon} Running {self.unique_name}...')
 
         try:
