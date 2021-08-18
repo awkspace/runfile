@@ -4,8 +4,8 @@ import os
 import sys
 from argparse import ArgumentParser
 from runfile import Runfile
-from runfile.exceptions import TargetNotFoundError, \
-    TargetExecutionError, RunfileFormatError
+from runfile.exceptions import TargetNotFoundError, TargetExecutionError, \
+    RunfileFormatError, RunfileNotFoundError
 
 # TODO: Tab completion of targets, flags
 # TODO: --list to list targets
@@ -39,7 +39,7 @@ def main():
             print(f.read())
         return
 
-    rf = Runfile(args.filename)
+    rf = Runfile(args.filename, root=True)
     try:
         rf.load()
         if args.update:

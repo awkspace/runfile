@@ -21,7 +21,7 @@ logger = logging.getLogger('runfile')
 
 
 class Runfile():
-    def __init__(self, path):
+    def __init__(self, path, root=False):
         self.path = path
         self.header = None
         self.tokens = []
@@ -29,6 +29,7 @@ class Runfile():
         self.start_time = None
         self.results = []
         self.use_containers = False
+        self.root = root
 
     def __str__(self):
         tokens = [str(t) for t in self.tokens]
@@ -204,14 +205,14 @@ class Runfile():
             all_targets = []
         for _, target in self.targets.items():
             include_path = target.runfile.header.include_path
-            if target.name is None:
-                if include_path:
-                    target.unique_name = '/'.join(
-                        [i['name'] for i in include_path])
-                    continue
-                else:
-                    target.unique_name = self.path
-                    continue
+            if target.name is None and include_path:
+                include_name = '/'.join(
+                    [i['name'] for i in include_path])
+                target.unique_name = f'global target for {include_name}'
+                continue
+            elif target.name is None:
+                target.unique_name = 'global target'
+                continue
             name = target.name
             for include in reversed(include_path):
                 if name in all_targets:
@@ -323,7 +324,8 @@ class Runfile():
         print(f'{status} in {duration(self.start_time)}')
         print('---')
         for result in self.results:
-            result.print_status()
+            if result:
+                result.print_status()
 
     def container(self):
         return self.targets[None].container

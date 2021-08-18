@@ -7,7 +7,7 @@ import re
 import time
 from runfile.util import duration, human_time_to_seconds
 from runfile.exceptions import CodeBlockExecutionError, TargetExecutionError, \
-    RunfileFormatError
+    RunfileFormatError, ContainerBuildError
 from runfile.cache import RunfileCache
 from io import BytesIO
 
@@ -60,37 +60,42 @@ class Target():
 
     def execute(self, silent=False):
         self.result = TargetResult(self.unique_name)
+        self.result.target_start = time.time()
         if not self.name:
-            self.result.setup = True
+            self.result.common = True
 
         if self.runfile.use_containers:
             if self.dockerfile:
-                self.build_container()
+                try:
+                    self.build_container()
+                    self.result.set_status(TargetResult.SUCCESS)
+                except ContainerBuildError as e:
+                    self.result.exception = e
+                    self.result.set_status(TargetResult.FAILURE)
+                    return self.result
             else:
                 self.container = self.runfile.container()
 
-        if not self.is_expired():
-            self.result.status = TargetResult.CACHED
+        if not self.blocks:
             return self.result
 
-        self.result.target_start = time.time()
+        if not self.is_expired():
+            self.result.set_status(TargetResult.CACHED)
+            return self.result
+
         icon = '⏳'
         if self.container:
             icon = '📦'
-        action = 'Executing target'
-        if not self.name:
-            action = 'Setting up'
-        print(f'{icon} {action} {self.unique_name}...')
+        print(f'{icon} Running {self.unique_name}...')
 
         try:
             for block in self.blocks:
                 block.execute(self.container)
-            self.result.status = TargetResult.SUCCESS
+            self.result.set_status(TargetResult.SUCCESS)
         except CodeBlockExecutionError as e:
             self.result.exception = e
-            self.result.status = TargetResult.FAILURE
+            self.result.set_status(TargetResult.FAILURE)
 
-        self.result.target_finish = time.time()
         if self.name and self.container != self.runfile.container():
             self.stop_container()
         if self.result.status == TargetResult.SUCCESS:
@@ -157,10 +162,22 @@ class Target():
                 pass
         build_file = BytesIO(self.dockerfile.encode('utf-8'))
         print(f'⏳ Building container for {self.unique_name}...')
-        image = client.images.build(
-            fileobj=build_file,
-            rm=True
-        )[0]
+
+        build_error = None
+        try:
+            image = client.images.build(
+                fileobj=build_file,
+                rm=True
+            )[0]
+        except docker.errors.BuildError as e:
+            build_error = e
+            print(str(build_error))
+            print(f'❌ Failed building container for {self.unique_name}.')
+            print()
+
+        if build_error:
+            raise ContainerBuildError(255)
+
         print('📦 Container built.')
         print()
         self.cache()['image'] = image.id
@@ -203,24 +220,19 @@ class TargetResult():
         self.target_start = None
         self.target_finish = None
         self.used_cache = False
-        self.setup = False
+        self.common = False
+        self.root = False
 
     def __bool__(self):
         return self.status is not None
 
     def print_status(self):
-        if not self.name:
-            return
-        if self.setup and self.status == TargetResult.SUCCESS:
-            print(f'✅ Set up {self.name}. ({self.time()})')
-        elif self.setup and self.status == TargetResult.FAILURE:
-            print(f'❌ Failed setting up {self.name}. ({self.time()})')
-        elif self.status == TargetResult.SUCCESS:
+        if self.status == TargetResult.SUCCESS:
             print(f'✅ Completed {self.name}. ({self.time()})')
         elif self.status == TargetResult.FAILURE:
             print(f'❌ Failed {self.name}. ({self.time()})')
         elif self.status == TargetResult.CACHED:
-            print(f'💾 Used cache for {self.name}')
+            print(f'💾 Used cache for {self.name}.')
 
     def time(self):
         return duration(self.target_start, self.target_finish)
@@ -228,3 +240,7 @@ class TargetResult():
     def raise_if_failed(self):
         if self.status == TargetResult.FAILURE:
             raise TargetExecutionError(self.exception.exit_code)
+
+    def set_status(self, status):
+        self.target_finish = time.time()
+        self.status = status

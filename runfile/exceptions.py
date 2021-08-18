@@ -23,3 +23,8 @@ class TargetExecutionError(Exception):
 class CodeBlockExecutionError(Exception):
     def __init__(self, exit_code):
         self.exit_code = exit_code
+
+
+class ContainerBuildError(Exception):
+    def __init__(self, exit_code):
+        self.exit_code = exit_code
