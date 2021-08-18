@@ -39,6 +39,14 @@ def main():
             print(f.read())
         return
 
+    while True:
+        if os.path.exists(args.filename) and os.path.isfile(args.filename):
+            break
+        if os.getcwd() == os.path.abspath(os.sep):
+            print(f'Runfile not found: {args.filename}', file=sys.stderr)
+            sys.exit(1)
+        os.chdir(os.path.dirname(os.getcwd()))
+
     rf = Runfile(args.filename, root=True)
     try:
         rf.load()
@@ -47,9 +55,6 @@ def main():
         rf.save()
     except RunfileFormatError as e:
         print(f'RunfileFormatError: {str(e)}', file=sys.stderr)
-        sys.exit(1)
-    except RunfileNotFoundError as e:
-        print(f'Runfile not found: {e.path}', file=sys.stderr)
         sys.exit(1)
 
     if args.list_targets:
