@@ -2,7 +2,14 @@
 
 __runfile_completion () {
     case "${COMP_WORDS[COMP_CWORD]}" in
-        -*) suggestions="-l -u -h -f --bash-completion --containers --list-targets --update --file" ;;
+        -*) suggestions="-l -u -h -f"
+            suggestions="$suggestions --bash-completion"
+            suggestions="$suggestions --containers"
+            suggestions="$suggestions --list-targets"
+            suggestions="$suggestions --update"
+            suggestions="$suggestions --file"
+            suggestions="$suggestions --no-cache"
+            ;;
         *)
             filename='Runfile.md'
             file_flag=false

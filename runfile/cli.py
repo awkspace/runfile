@@ -27,6 +27,9 @@ def main():
     parser.add_argument(
         '--bash-completion', dest='bash_completion', action='store_true',
         help='Print bash completion script')
+    parser.add_argument(
+        '--no-cache', dest='no_cache', action='store_true',
+        help='Run all targets, even if they are cached')
     args = parser.parse_args()
 
     if args.bash_completion:
