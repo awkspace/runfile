@@ -7,7 +7,7 @@ Runfile](https://github.com/awkspace/runfile/blob/master/Runfile.md).
 
 ## Installation
 
-Install from [PyPi](https://pypi.org/project/runfile/):
+Install from [PyPI](https://pypi.org/project/runfile/):
 
 ```sh
 pip install runfile
