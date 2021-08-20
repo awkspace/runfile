@@ -2,10 +2,12 @@
 
 import docker
 import os
+import shlex
 import sys
-from tempfile import TemporaryDirectory
 from runfile.cache import RunfileCache
 from runfile.exceptions import CodeBlockExecutionError
+from subprocess import Popen, PIPE, STDOUT
+from tempfile import TemporaryDirectory
 
 language_info = {
     'sh': {
@@ -75,35 +77,63 @@ class CodeBlock():
             with open(filepath, 'w') as f:
                 f.write(self.body)
                 f.flush()
+
+            if container:
+                directory = os.path.join('/mnt', directory[1:])
+                filepath = os.path.join('/mnt', filepath[1:])
+
             cmd = language_info.get(self.language, {}).get(
                 'cmd',
-                '/usr/bin/env {exe} "{file}"'
+                '/usr/bin/env {exe} "{file}"')
+            fmtcmd = cmd.format(
+                dir=directory,
+                file=filepath,
+                exe=self.language
             )
 
             if container:
-                client = docker.from_env()
-                resp = client.api.exec_create(
-                    container.id,
-                    cmd.format(
-                        dir=os.path.join('/mnt', directory[1:]),
-                        file=os.path.join('/mnt', filepath[1:]),
-                        exe=self.language
-                    )
-                )
-                exec_result = client.api.exec_start(
-                    resp['Id'], stream=True)
-                for output in exec_result:
-                    sys.stdout.buffer.write(output)
-                    sys.stdout.buffer.flush()
-                inspect = client.api.exec_inspect(resp['Id'])
-                exit_code = inspect['ExitCode']
+                exit_code = self.execute_in_container(fmtcmd, container)
             else:
-                exit_code = os.system(
-                    cmd.format(
-                        dir=directory,
-                        file=filepath,
-                        exe=self.language
-                    )
-                )
+                exit_code = self.execute_in_subprocess(fmtcmd)
+
             if exit_code:
                 raise CodeBlockExecutionError(exit_code)
+
+    def execute_in_subprocess(self, cmd):
+        trailing_byte = b''
+        exit_code = None
+        with Popen(shlex.split(cmd), stdout=PIPE, stderr=STDOUT) as proc:
+            while True:
+                exit_code = proc.poll()
+                if exit_code is not None:
+                    read_bytes = proc.stdout.read()
+                else:
+                    read_bytes = proc.stdout.read(1)
+                if read_bytes:
+                    trailing_byte = read_bytes[-1:]
+                sys.stdout.buffer.write(read_bytes)
+                sys.stdout.buffer.flush()
+                if exit_code is not None:
+                    break
+
+        if trailing_byte != b"\n":
+            print()
+
+        return exit_code
+
+    def execute_in_container(self, cmd, container):
+        client = docker.from_env()
+        resp = client.api.exec_create(container.id, cmd)
+        exec_result = client.api.exec_start(resp['Id'], stream=True)
+
+        trailing_byte = b''
+        for output in exec_result:
+            trailing_byte = output[-1:]
+            sys.stdout.buffer.write(output)
+            sys.stdout.buffer.flush()
+
+        if trailing_byte != b"\n":
+            print()
+
+        inspect = client.api.exec_inspect(resp['Id'])
+        return inspect['ExitCode']

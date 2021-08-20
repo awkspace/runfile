@@ -162,8 +162,7 @@ class Target():
             except docker.errors.ImageNotFound:
                 pass
         build_file = BytesIO(self.dockerfile.encode('utf-8'))
-        print(
-            f'Building container for {self.unique_name}...',
+        msg(f'Building container for {self.unique_name}...',
             MsgType.WORKING)
 
         build_error = None
