@@ -16,6 +16,8 @@ os.system(f'run_set "PYTHONPATH" {":".join(path)}')
 
 ## test
 
+Test package.
+
 ```yaml
 requires:
   - devinstall
@@ -26,6 +28,8 @@ python3 -m pytest --ignore lib
 ```
 
 ## lint
+
+Lint package.
 
 ```yaml
 requires:
@@ -38,6 +42,8 @@ flake8 --exclude lib
 
 ## install
 
+Install package from source.
+
 ```yaml
 expires: null
 ```
@@ -48,12 +54,53 @@ pip install .
 
 ## devinstall
 
+Install package from source including development dependenices.
+
 ```yaml
 expires: null
 ```
 
 ```sh
 pip install -e .[dev] -U --target lib
+```
+
+## build
+
+```yaml
+expires: null
+```
+
+Create source distribution.
+
+```sh
+rm -f dist/*
+python setup.py sdist
+```
+
+## upload_test_pypi
+
+Upload package to test.pypi.org.
+
+```yaml
+requires:
+  - devinstall
+  - build
+```
+```sh
+lib/bin/twine upload --repository testpypi dist/*
+```
+
+## upload_live_pypi
+
+Upload package to pypi.org.
+
+```yaml
+requires:
+  - devinstall
+  - build
+```
+```sh
+lib/bin/twine upload --repository pypi dist/*
 ```
 
 ## clean
