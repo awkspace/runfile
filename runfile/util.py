@@ -87,7 +87,7 @@ class MsgType():
         'style': Fore.BLUE
     }
     SUCCESS = {
-        'icon': '✔️',
+        'icon': '✔',
         'style': Fore.GREEN
     }
     FAILURE = {
