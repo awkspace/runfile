@@ -47,18 +47,11 @@ class Runfile():
         with open(self.path, 'w') as f:
             f.write(content)
 
-    def append_file(self, content):
-        with open(self.path, 'a') as f:
-            f.write(content)
-
     def save(self):
         self.write_file(str(self))
 
     def load(self):
         self.tokenize()
-
-    def is_file(self):
-        return not re.search('https?://')
 
     def content(self):
         if os.path.exists(self.path):
