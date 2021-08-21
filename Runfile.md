@@ -24,7 +24,23 @@ requires:
 ```
 
 ```sh
-python3 -m pytest --ignore lib
+python3 -m pytest --ignore lib --cov=runfile --cov-report term
+```
+
+## test_cov
+
+Test package and open up a coverage report.
+
+```yaml
+requires:
+  - devinstall
+```
+
+```sh
+covdir="$(mktemp -d)"
+python3 -m pytest --ignore lib --cov=runfile --cov-report "html:$covdir"
+sensible-browser "file://$covdir/index.html"
+run_set "covfile" "$covdir/index.html"
 ```
 
 ## lint
