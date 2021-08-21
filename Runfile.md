@@ -8,10 +8,11 @@ Invoke `lib/run` for the development version.
 ```python
 import os
 lib_path = './lib'
-path = os.environ.get('PYTHONPATH', '').split(':')
-if lib_path not in path:
-    path.append(lib_path)
-os.system(f'run_set "PYTHONPATH" {":".join(path)}')
+paths = os.environ.get('PYTHONPATH', '').split(':')
+paths = [path for path in paths if path]
+if lib_path not in paths:
+    paths.append(lib_path)
+os.system(f'run_set "PYTHONPATH" {":".join(paths)}')
 ```
 
 ## test
