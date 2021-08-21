@@ -1,7 +1,7 @@
 # Runfile
 
 Installs dependencies to a local `lib` directory to avoid conflicting with a
-global install of`run`.
+global install of `run`.
 
 Invoke `lib/run` for the development version.
 
@@ -83,11 +83,11 @@ pip install -e .[dev] -U --target lib
 
 ## build
 
+Create source distribution for publishing.
+
 ```yaml
 expires: null
 ```
-
-Create source distribution.
 
 ```sh
 rm -f dist/*

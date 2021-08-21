@@ -5,7 +5,8 @@ import hashlib
 import os
 import re
 import time
-from runfile.util import duration, human_time_to_seconds, msg, MsgType
+from runfile.util import duration, human_time_to_seconds, msg, MsgType, \
+    to_plaintext
 from runfile.exceptions import CodeBlockExecutionError, TargetExecutionError, \
     RunfileFormatError, ContainerBuildError
 from runfile.cache import RunfileCache
@@ -13,13 +14,14 @@ from io import BytesIO
 
 
 class Target():
-    pattern = r'^\#\#\s+(?P<name>.+?)(?:\n+(?P<desc>[^\#\n].+?))?$'
+    pattern = r'^\#\#\s+(?P<name>.+?)(?:\n+(?P<desc>[^\#\n].+?))?\n(?=\n|`|#)'
 
     def __init__(self, orig=None, name=None, desc=None):
         self.orig = orig
         self.name = name
         self.unique_name = None
-        self.desc = desc
+        self.orig_desc = desc
+        self.desc = to_plaintext(desc)
         self.blocks = []
         self.runfile = None
         self.config = {}
@@ -31,7 +33,8 @@ class Target():
     def __str__(self):
         s = f"## {self.name}"
         if self.desc:
-            s += f"\n\n{self.desc}"
+            s += f"\n\n{self.orig_desc}"
+        s += "\n"
         return s
 
     def __repr__(self):

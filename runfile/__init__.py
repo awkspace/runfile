@@ -13,7 +13,7 @@ from runfile.code_block import CodeBlock
 from runfile.exceptions import TargetNotFoundError, \
     RunfileFormatError, RunfileNotFoundError
 from runfile.target import Target, TargetResult
-from runfile.util import duration, msg, MsgType
+from runfile.util import duration, msg, MsgType, to_plaintext
 
 
 class Runfile():
@@ -332,12 +332,13 @@ class Runfile():
 class RunfileHeader():
     pattern = (r'^#\s+(?P<name>.+?)$'
                r'(?:\n+>\s+(?P<includes>[^#\n].+?))?$'
-               r'(?:\n+(?P<desc>[^\#\n].+?))?$')
+               r'(?:\n+(?P<desc>[^\#\n].+?))?\n(?=\n|`|#)')
 
     def __init__(self, orig=None, name=None, desc=None, includes=None):
         self.orig = orig
         self.name = name
-        self.desc = desc
+        self.orig_desc = desc
+        self.desc = to_plaintext(desc)
         self.include_path = []
         if includes:
             pattern = re.compile(r'\[(?P<name>.+?)\]\((?P<path>.+?)\)')
@@ -350,7 +351,8 @@ class RunfileHeader():
             links = [f'[{i["name"]}]({i["path"]})' for i in self.include_path]
             s += f"\n\n> Included from {' » '.join(links)}"
         if self.desc:
-            s += f"\n\n{self.desc}"
+            s += f"\n\n{self.orig_desc}"
+        s += "\n"
         return s
 
     def __repr__(self):

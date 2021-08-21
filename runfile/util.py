@@ -69,6 +69,19 @@ def human_time_to_seconds(s):
     return seconds
 
 
+def to_plaintext(text):
+    if not text:
+        return None
+
+    text = re.sub(r'\n+', " ", text)
+    text = re.sub(r' +', " ", text)
+    for char in list('_*`'):
+        regex = re.compile(f'\\{char}(.+?)\\{char}')
+        text = re.sub(regex, r'\1', text)
+
+    return text
+
+
 class MsgType():
     FILE = {
         'icon': '📜',

@@ -37,6 +37,7 @@ runfile_examples = {
         # An example Runfile
 
         A description of this Runfile.
+        This should be included in the description!
 
         ## Target_1
 
@@ -60,7 +61,8 @@ runfile_examples = {
             RunfileHeader(
                 '',
                 "An example Runfile",
-                "A description of this Runfile.",
+                "A description of this Runfile. "
+                "This should be included in the description!",
                 None),
             Target('', "Target_1", "A description for Target_1."),
             CodeBlock('', "sh", 'echo "Hello world"'),
