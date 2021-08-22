@@ -15,7 +15,7 @@ setup(
     name='runfile',
     author='awk',
     author_email='awk@awk.space',
-    version='1.0.0.post0',
+    version='1.0.1',
     description='A generic task-based automation format.',
     long_description=readme,
     long_description_content_type='text/markdown',
