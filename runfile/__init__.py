@@ -155,31 +155,19 @@ class Runfile():
         return includes
 
     def ensure_includes(self):
-        for key in list(self.children):
-            if key not in self.includes():
-                del self.children[key]
+        orig_children = self.children
+        self.children = OrderedDict()
+        wanted_includes = self.includes()
+
+        for key, value in wanted_includes.items():
+            if key in orig_children and orig_children[key].path == value:
+                self.children[key] = orig_children[key]
                 continue
-            child_path = self.children[key].header.include_path[0]['path']
-            if child_path != self.includes()[key]:
-                del self.children[key]
 
-        for i in range(len(list(self.includes()))):
-            key = list(self.includes())[i]
-            do_import = False
-            if len(self.children) < i+1:
-                do_import = True
-            else:
-                child_key = list(self.children)[i]
-                if key != child_key:
-                    do_import = True
-
-            if do_import:
-                self.children[key] = Runfile(self.includes()[key])
-                self.children[key].load()
-                self.children[key].prepend_include_path({
-                    'name': key,
-                    'path': self.includes()[key]
-                })
+            self.children[key] = Runfile(value)
+            self.children[key].load()
+            self.children[key].prepend_include_path(
+                {'name': key, 'path': value})
 
     def child_name(self, path):
         if not self.includes():

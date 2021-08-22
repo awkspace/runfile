@@ -2,12 +2,13 @@
 
 import pytest
 import yaml
-from textwrap import dedent
+from collections import OrderedDict
 from runfile import Runfile, RunfileHeader
-from runfile.target import Target
 from runfile.code_block import CodeBlock
 from runfile.exceptions import RunfileNotFoundError, RunfileFormatError
+from runfile.target import Target
 from runfile.util import Error
+from textwrap import dedent
 
 runfile_examples = {
     'basic': {
@@ -443,3 +444,40 @@ def test_include_duplicate_key(mocker):
         rf.includes()
 
     assert str(excinfo.value) == Error.DUPLICATE_INCLUDE.format('include_1')
+
+
+def test_ensure_includes(mocker):
+    mocker.patch.object(Runfile, 'includes', return_value=OrderedDict([
+        ('include_1', 'https://example.com/Include1.md'),
+        ('include_2', 'https://example.com/Include2.md'),
+        ('include_3', 'https://example.com/Include3.md'),
+        ('include_4', 'https://example.com/Include4.md'),
+        ('include_5', 'https://example.com/Include5.md')
+    ]))
+    mocker.patch.object(Runfile, 'load')
+    mocker.patch.object(Runfile, 'prepend_include_path')
+    rf = Runfile('some_file.md')
+    orig_children = OrderedDict([
+        ('include_0', Runfile('https://example.com/Include0.md')),
+        ('include_2', Runfile('https://example.com/Include2OldPath.md')),
+        ('include_4', Runfile('https://example.com/Include4.md'))
+    ])
+    rf.children = orig_children
+    rf.children['include_2'].header = RunfileHeader(
+        None, None, None,
+        '[include_2](https://example.com/Include2OldPath.md)')
+    rf.children['include_4'].header = RunfileHeader(
+        None, None, None,
+        '[include_4](https://example.com/Include4.md)')
+
+    rf.ensure_includes()
+
+    assert list(rf.children.keys()) == [
+        'include_1',
+        'include_2',
+        'include_3',
+        'include_4',
+        'include_5'
+    ]
+    assert rf.children['include_2'].path == 'https://example.com/Include2.md'
+    assert rf.children['include_4'] == orig_children['include_4']
