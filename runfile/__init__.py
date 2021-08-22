@@ -332,7 +332,7 @@ class Runfile():
 class RunfileHeader():
     pattern = (r'^#\s+(?P<name>.+?)$'
                r'(?:\n+>\s+(?P<includes>[^#\n].+?))?$'
-               r'(?:\n+(?P<desc>[^\#\n].+?))?\n(?=\n|`|#)')
+               r'(?:\n+(?P<desc>[^\#\n].+?))?\n(?=\n|`|#|$)')
 
     def __init__(self, orig=None, name=None, desc=None, includes=None):
         self.orig = orig

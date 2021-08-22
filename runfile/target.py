@@ -14,7 +14,8 @@ from io import BytesIO
 
 
 class Target():
-    pattern = r'^\#\#\s+(?P<name>.+?)(?:\n+(?P<desc>[^\#\n].+?))?\n(?=\n|`|#)'
+    pattern = (r'^\#\#\s+(?P<name>.+?)'
+               r'(?:\n+(?P<desc>[^\#\n].+?))?\n(?=\n|`|#|$)')
 
     def __init__(self, orig=None, name=None, desc=None):
         self.orig = orig
