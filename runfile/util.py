@@ -115,3 +115,12 @@ class MsgType():
         'icon': '💾',
         'style': Style.DIM
     }
+
+
+class Error():
+    DUPLICATE_HEADER = 'Only one top-level header is permitted per Runfile.'
+    NO_HEADER = 'Missing Runfile header.'
+    INCLUDE_MULTIPLE_KEYS = 'Includes must contain one key.'
+    DUPLICATE_INCLUDE = 'Duplicate include alias: {}'
+    TARGET_LOOP = 'Target loop detected: {}'
+    DUPLICATE_TARGET = 'Duplicate target name: {}'

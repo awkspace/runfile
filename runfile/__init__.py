@@ -13,7 +13,7 @@ from runfile.code_block import CodeBlock
 from runfile.exceptions import TargetNotFoundError, \
     RunfileFormatError, RunfileNotFoundError
 from runfile.target import Target, TargetResult
-from runfile.util import duration, msg, MsgType, to_plaintext
+from runfile.util import duration, msg, to_plaintext, MsgType, Error
 
 
 class Runfile():
@@ -96,9 +96,7 @@ class Runfile():
             if isinstance(token, RunfileHeader):
                 if rf.header:
                     if not token.include_path and rf is self:
-                        raise RunfileFormatError(
-                            'Only one top-level header is permitted '
-                            'per Runfile.')
+                        raise RunfileFormatError(Error.DUPLICATE_HEADER)
                     rf = self
                     for include in token.include_path:
                         child = rf.child_name(include['path'])
@@ -111,7 +109,7 @@ class Runfile():
                 else:
                     rf.header = token
             elif rf is self and not rf.header:
-                raise RunfileFormatError('Missing Runfile header.')
+                raise RunfileFormatError(Error.NO_HEADER)
             if token is not None:
                 rf.tokens.append(token)
 
@@ -128,7 +126,7 @@ class Runfile():
                 target = token
                 if target.name in self.targets:
                     raise RunfileFormatError(
-                        f'Duplicate target name: {target.name}')
+                        Error.DUPLICATE_TARGET.format(target.name))
                 self.targets[target.name] = target
                 target.runfile = self
             elif isinstance(token, CodeBlock):
@@ -149,9 +147,10 @@ class Runfile():
         for include in include_list:
             keys = list(include)
             if len(keys) > 1:
-                raise RunfileFormatError(
-                    'Includes must contain one key.')
+                raise RunfileFormatError(Error.INCLUDE_MULTIPLE_KEYS)
             key = keys[0]
+            if key in includes:
+                raise RunfileFormatError(Error.DUPLICATE_INCLUDE.format(key))
             includes[key] = include[key]
         return includes
 
@@ -263,7 +262,7 @@ class Runfile():
         if cycle_error:
             targets = [t.name for t in cycle_error.args[1]]
             raise RunfileFormatError(
-                f'Target loop detected: {" -> ".join(targets)}')
+                Error.TARGET_LOOP.format(' -> '.join(targets)))
 
         self.stop_containers()
         if self.results:
