@@ -11,11 +11,16 @@ with open('requirements.txt') as requirements_file:
 with open('dev_requirements.txt') as dev_requirements_file:
     dev_requirements = dev_requirements_file.readlines()
 
+try:
+    import graphlib  # noqa: F401
+except ImportError:
+    requirements.append('graphlib_backport')
+
 setup(
     name='runfile',
     author='awk',
     author_email='awk@awk.space',
-    version='1.0.1',
+    version='1.0.2',
     description='A generic task-based automation format.',
     long_description=readme,
     long_description_content_type='text/markdown',
