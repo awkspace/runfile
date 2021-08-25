@@ -2,3 +2,4 @@ colorama
 docker
 humanize
 pyyaml
+six

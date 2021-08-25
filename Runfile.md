@@ -86,7 +86,7 @@ pip install -e .[dev] -U --target lib
 Create source distribution for publishing.
 
 ```yaml
-expires: null
+expires: 5m
 ```
 
 ```sh
