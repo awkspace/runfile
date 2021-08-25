@@ -28,7 +28,7 @@ requires:
 python3 -m pytest --ignore lib --cov=runfile --cov-report term
 ```
 
-## test_cov
+## test:cov
 
 Test package and open up a coverage report.
 
@@ -86,7 +86,8 @@ pip install -e .[dev] -U --target lib
 Create source distribution for publishing.
 
 ```yaml
-expires: null
+requires:
+  - lint
 ```
 
 ```sh
@@ -94,7 +95,7 @@ rm -f dist/*
 python setup.py sdist
 ```
 
-## upload_test_pypi
+## publish:test
 
 Upload package to test.pypi.org.
 
@@ -107,7 +108,7 @@ requires:
 lib/bin/twine upload --repository testpypi dist/*
 ```
 
-## upload_live_pypi
+## publish:live
 
 Upload package to pypi.org.
 
@@ -127,7 +128,7 @@ invalidates:
   - build
 ```
 
-## clean_deps
+## clean:all
 
 ```yaml
 invalidates:

@@ -18,5 +18,5 @@ def test_validate(name, valid):
     if valid:
         Target(name=name)
     else:
-        with pytest.raises(RunfileFormatError) as execinfo:
+        with pytest.raises(RunfileFormatError):
             Target(name=name)
