@@ -20,12 +20,13 @@ setup(
     name='runfile',
     author='awk',
     author_email='awk@awk.space',
-    version='1.0.3',
+    version='1.0.4',
     description='A generic task-based automation format.',
     long_description=readme,
     long_description_content_type='text/markdown',
     license='MIT',
     url='https://github.com/awkspace/runfile',
+    include_package_data=True,
     install_requires=requirements,
     extras_require={
         'dev': dev_requirements
