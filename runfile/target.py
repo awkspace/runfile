@@ -80,18 +80,13 @@ class Target():
             else:
                 self.container = self.runfile.container()
 
-        if not self.blocks:
-            if self.config and self.name:
-                # Technically, we executed the config, so mark success
-                self.result.set_status(TargetResult.SUCCESS)
-            return self.result
-
         if not self.is_expired():
             self.result.set_status(TargetResult.CACHED)
             return self.result
 
-        style = MsgType.CONTAINER if self.container else MsgType.WORKING
-        msg(f'Running {self.unique_name}...', style)
+        if self.blocks:
+            style = MsgType.CONTAINER if self.container else MsgType.WORKING
+            msg(f'Running {self.unique_name}...', style)
 
         try:
             for block in self.blocks:

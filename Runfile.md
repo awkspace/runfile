@@ -86,7 +86,7 @@ pip install -e .[dev] -U --target lib
 Create source distribution for publishing.
 
 ```yaml
-expires: 5m
+expires: null
 ```
 
 ```sh
@@ -124,7 +124,15 @@ lib/bin/twine upload --repository pypi dist/*
 
 ```yaml
 invalidates:
-  - '*'
+  - build
+```
+
+## clean_deps
+
+```yaml
+invalidates:
+  - install
+  - devinstall
 ```
 
 ```sh
