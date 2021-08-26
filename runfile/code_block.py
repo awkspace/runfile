@@ -102,7 +102,7 @@ class CodeBlock():
     def execute_in_subprocess(self, cmd):
         trailing_byte = b''
         exit_code = None
-        with Popen(shlex.split(cmd), stdout=PIPE, stderr=STDOUT) as proc:
+        with Popen(['/bin/sh', '-c', cmd], stdout=PIPE, stderr=STDOUT) as proc:
             while True:
                 exit_code = proc.poll()
                 if exit_code is not None:
