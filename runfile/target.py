@@ -55,8 +55,8 @@ class Target():
 
     def validate(self):
         if self.name:
-            name_pattern = r'^[A-Za-z0-9][A-Za-z0-9_:]+[A-Za-z0-9]$'
-            if not re.match(name_pattern, self.name):
+            p = r'(?:^[A-Za-z0-9][A-Za-z0-9_:]*[A-Za-z0-9]$|^[A-Za-z0-9]$)'
+            if not re.match(p, self.name):
                 raise RunfileFormatError(
                     f'Invalid target name "{self.name}". Target names may '
                     'only contain alphanumeric characters, underscores, and '

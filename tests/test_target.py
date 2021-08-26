@@ -12,7 +12,9 @@ from runfile.target import Target
     ['FooBar', True],
     ['foo-bar', False],
     [':foo', False],
-    ['bar_', False]
+    ['bar_', False],
+    ['hi', True],
+    ['a', True]
 ])
 def test_validate(name, valid):
     if valid:
