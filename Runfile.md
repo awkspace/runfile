@@ -114,7 +114,7 @@ requires:
 ```sh
 rm -f dist/run
 pip install -r requirements.txt
-pyinstaller -F bin/run run.spec
+pyinstaller -F bin/run
 ```
 
 ## publish:test
