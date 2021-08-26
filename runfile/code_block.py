@@ -79,8 +79,8 @@ class CodeBlock():
                 f.flush()
 
             if container:
-                directory = os.path.join('/mnt', directory[1:])
-                filepath = os.path.join('/mnt', filepath[1:])
+                directory = os.path.join('/host', directory[1:])
+                filepath = os.path.join('/host', filepath[1:])
 
             cmd = language_info.get(self.language, {}).get(
                 'cmd',

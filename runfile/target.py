@@ -204,7 +204,11 @@ class Target():
                     'mode': 'rw'
                 },
                 '/tmp': {
-                    'bind': '/mnt/tmp',
+                    'bind': '/host/tmp',
+                    'mode': 'rw'
+                },
+                '/var/folders': {
+                    'bind': '/host/var/folders',
                     'mode': 'rw'
                 }
             }
