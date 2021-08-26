@@ -91,8 +91,30 @@ requires:
 ```
 
 ```sh
-rm -f dist/*
+rm -f dist/*.tar.gz
 python setup.py sdist
+```
+
+## build:bin
+
+(Experimental) Create binary for publishing.
+
+```dockerfile
+FROM python:3.9-buster
+RUN apt-get update && \
+  apt-get install patchelf && \
+  pip install pyinstaller
+```
+
+```yaml
+requires:
+  - lint
+```
+
+```sh
+rm -f dist/run
+pip install -r requirements.txt
+pyinstaller -F bin/run run.spec
 ```
 
 ## publish:test
@@ -126,6 +148,11 @@ lib/bin/twine upload --repository pypi dist/*
 ```yaml
 invalidates:
   - build
+```
+
+```sh
+rm -rf dist/*
+rm -rf *.egg-info
 ```
 
 ## clean:all
