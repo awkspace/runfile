@@ -2,7 +2,7 @@
 
 import docker
 import os
-import shlex
+import subprocess
 import sys
 from runfile.cache import RunfileCache
 from runfile.exceptions import CodeBlockExecutionError
@@ -20,7 +20,7 @@ language_info = {
         'cmd': '/usr/bin/env zsh -e "{file}"'
     },
     'js': {
-        'cmd': '/usr/bin/env node "{file}"'
+        'exe': 'node'
     },
     'go': {
         'file': 'run.go',
@@ -30,16 +30,22 @@ language_info = {
         'file': 'Main.java'
     },
     'c': {
+        'exe': 'gcc',
         'file': 'run.c',
-        'cmd': 'gcc "{dir}/run.c" -o "{dir}/run" && "{dir}/run"'
+        'cmd': '{exe} "{dir}/run.c" -o "{dir}/run" && "{dir}/run"'
     },
     'cpp': {
+        'exe': 'g++',
         'file': 'run.cpp',
-        'cmd': 'g++ "{dir}/run.cpp" -o "{dir}/run" && "{dir}/run"'
+        'cmd': '{exe} "{dir}/run.cpp" -o "{dir}/run" && "{dir}/run"'
     },
     'csharp': {
+        'exe': 'mcs',
         'file': 'run.cs',
-        'cmd': 'mcs "{dir}/run.cs" && mono "{dir}/run.exe"'
+        'cmd': '{exe} "{dir}/run.cs" && mono "{dir}/run.exe"'
+    },
+    'python': {
+        'exe': ['python3', 'python']
     }
 }
 
@@ -82,14 +88,23 @@ class CodeBlock():
                 directory = os.path.join('/host', directory[1:])
                 filepath = os.path.join('/host', filepath[1:])
 
+            executables = language_info.get(self.language, {}).get(
+                'exe', self.language)
+            if not isinstance(executables, list):
+                executables = [executables]
+            executable = self.find_executable(executables, container)
+
+            if not executable:
+                raise CodeBlockExecutionError(
+                    f'No executable was found for language "{self.language}".')
+
             cmd = language_info.get(self.language, {}).get(
                 'cmd',
                 '/usr/bin/env {exe} "{file}"')
             fmtcmd = cmd.format(
                 dir=directory,
                 file=filepath,
-                exe=self.language
-            )
+                exe=executable)
 
             if container:
                 exit_code = self.execute_in_container(fmtcmd, container)
@@ -137,3 +152,18 @@ class CodeBlock():
 
         inspect = client.api.exec_inspect(resp['Id'])
         return inspect['ExitCode']
+
+    def find_executable(self, executables, container):
+        if container:
+            for executable in executables:
+                exit_code, _ = container.exec_run(f'which {executable}')
+                if exit_code == 0:
+                    return executable
+        else:
+            for executable in executables:
+                proc = subprocess.run(
+                    ['which', executable],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL)
+                if proc.returncode == 0:
+                    return executable
