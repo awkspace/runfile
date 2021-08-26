@@ -158,6 +158,8 @@ rm -rf *.egg-info
 ## clean:all
 
 ```yaml
+requires:
+  - clean
 invalidates:
   - install
   - devinstall
