@@ -114,7 +114,7 @@ requires:
 ```sh
 rm -f dist/run
 pip install -r requirements.txt
-pyinstaller -F bin/run
+pyinstaller -F bin/run --add-data 'runfile/resources/*:runfile/resources/'
 ```
 
 ## publish:test
